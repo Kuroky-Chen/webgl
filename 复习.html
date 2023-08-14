@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  <script>
+    // 获取dom，获取上下文
+    const ctx = document.querySelector('#canvas')
+    const gl = ctx.getContext('webgl')
+
+    // 创建webgl源代码
+    const VERTEX_SHADER_SOURCE = `
+      attribute vec4 aPosition;
+      void main() {
+        gl_Position = aPosition;
+        gl_PointSize = 30.0;
+      }
+    `
+
+    const FRAGMENT_SHADER_SOURCE = `
+      precision mediump float;
+      uniform vec2 uColor;
+      void main() {
+        gl_FragColor = vec4(uColor.r, uColor.g, 0.0, 1.0);
+      }
+    `
+
+    // 创建着色器，关联，编译
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER)
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
+
+    gl.shaderSource(vertexShader, VERTEX_SHADER_SOURCE)
+    gl.shaderSource(fragmentShader, FRAGMENT_SHADER_SOURCE)
+
+    gl.compileShader(vertexShader)
+    gl.compileShader(fragmentShader)
+
+    // 创建程序，关联，使用
+    const program = gl.createProgram()
+
+    gl.attachShader(program, vertexShader)
+    gl.attachShader(program, fragmentShader)
+
+    gl.linkProgram(program)
+
+    gl.useProgram(program)
+
+    const box = []
+    const aPosition = gl.getAttribLocation(program, 'aPosition')
+    const uColor = gl.getUniformLocation(program, 'uColor')
+
+    ctx.onclick = function (ev) {
+      const x = ev.clientX;
+      const y = ev.clientY;
+
+      const domPosition = ev.target.getBoundingClientRect()
+      const domX = x - domPosition.left
+      const domY = y - domPosition.top
+
+      const halfWidth = ctx.offsetWidth / 2
+      const halfHeight = ctx.offsetHeight / 2
+
+
+      const clickX = (domX - halfWidth) / halfWidth
+      const clickY = (halfHeight - domY) / halfHeight
+
+      box.push({ clickX, clickY })
+
+      box.forEach(i => {
+        
+        
+      gl.vertexAttrib4f(aPosition, i.clickX, i.clickY, 0, 1)
+
+      gl.uniform2f(uColor, i.clickX, i.clickY)
+
+      // 渲染
+      gl.drawArrays(gl.POINTS, 0, 1)
+      })
+      
+
+    }
+
+
+  </script>
+</body>
+
+</html>

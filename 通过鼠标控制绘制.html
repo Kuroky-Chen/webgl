@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="index.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    #canvas {
+      background-color: yellow;
+      display: block;
+      margin: 50px auto 0;
+    }
+  </style>
+</head>
+<body>
+ 
+    <canvas id="canvas" width="400" height="400">
+      此浏览器不支持canvas
+    </canvas>
+  
+  
+
+  <script>
+    const ctx = document.querySelector('#canvas')
+
+    const gl = ctx.getContext('webgl')
+
+    // gl.clearColor(0.0, 0.0, 1.0, 1.0)
+
+    // gl.clear(gl.COLOR_BUFFER_BIT)
+
+
+    // 创建着色器源码
+    const VERTEX_SHADER_SOURCE =  `
+    // 只传递顶点数据 申明后会给一个默认值 中心点  vec4(0.0， 0.0， 0.0， 1.0)
+      attribute vec4 aPosition;
+      void main() {
+        // 要绘制的点的坐标
+        gl_Position = aPosition;
+        // 点的大小是多少
+        gl_PointSize = 10.0;
+      }
+    ` // 顶点着色器
+
+  
+
+    // gl_Position = vec4(0.0,0.0,0.0,1.0); 4个参数分别是 x, y, z, w  w是齐次坐标 (x/w, y/w, z/w)
+
+   const FRAGMENT_SHADER_SOURCE = `
+    // 主函数，入口函数
+      void main() {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      }
+    ` // 片元着色器
+
+    //  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0)   r,g,b,a
+    const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+
+    // 获取变量
+    const aPosition = gl.getAttribLocation(program, 'aPosition')
+  
+
+   
+       
+   const points = []
+
+      ctx.onmousemove = function(ev) {
+        const x = ev.clientX
+        const y = ev.clientY
+
+        // console.log(x, y)
+
+        const domPosition = ev.target.getBoundingClientRect()
+        // console.log(domPosition)
+
+        const domX = x - domPosition.left
+        const domY = y - domPosition.top
+        // console.log(domX, domY)
+
+        const halfWidth = ctx.offsetWidth / 2
+        const halfHeight = ctx.offsetHeight / 2
+
+        const clickX = (domX - halfWidth) / halfWidth
+        const clickY = (halfHeight - domY) / halfHeight
+
+        console.log(clickX, clickY)
+        points.push({
+          clickX,
+          clickY
+        })
+        points.forEach(i => {
+           // 赋值变量
+            gl.vertexAttrib2f(aPosition, i.clickX, i.clickY)
+            // 执行绘制
+            // 参数： 要绘制的图形是什么，  从哪个开始，  使用几个顶点
+            gl.drawArrays(gl.POINTS, 0, 1)
+        })
+        
+      }
+  </script>
+</body>
+</html>
